@@ -4,7 +4,7 @@ import {
   BrowserWindowConstructorOptions,
   screen,
 } from 'electron';
-import { constants } from '../shared';
+import { APP_NAME } from '../shared/constants';
 
 interface CreateWindowOptions {
   title?: string;
@@ -20,7 +20,7 @@ interface CreateWindowOptions {
 function getWindowDefaults(): BrowserWindowConstructorOptions {
   const screenSize = screen.getPrimaryDisplay().workAreaSize;
   return {
-    title: constants.APP_NAME,
+    title: APP_NAME,
     width: screenSize.width * 0.3,
     height: screenSize.height,
     x: 0,
@@ -38,11 +38,15 @@ export const createWindow = async (options: CreateWindowOptions = {}) => {
   windowOptions.height = options.windowSize?.height ?? windowOptions.height;
   windowOptions.x = options.windowPosition?.x ?? windowOptions.x;
   windowOptions.y = options.windowPosition?.y ?? windowOptions.y;
-  if (options.skipFocusOnOpen) windowOptions.show = false;
+  if (options.skipFocusOnOpen) {
+    windowOptions.show = false;
+  }
 
   const mainWindow = new BrowserWindow(windowOptions);
 
-  if (options.openDevTools) mainWindow.webContents.openDevTools();
+  if (options.openDevTools) {
+    mainWindow.webContents.openDevTools();
+  }
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -53,7 +57,9 @@ export const createWindow = async (options: CreateWindowOptions = {}) => {
     );
   }
 
-  if (options.skipFocusOnOpen) mainWindow.showInactive();
+  if (options.skipFocusOnOpen) {
+    mainWindow.showInactive();
+  }
 
   return mainWindow;
 };

@@ -15,9 +15,9 @@ export default defineConfig((env) => {
     base: './',
     build: {
       outDir: `.vite/renderer/${name}`,
-      rollupOptions: {
-        external: ['./src/shared'],
-      },
+      // rollupOptions: {
+      //   external: ['src/shared'],
+      // },
     },
     plugins: [pluginExposeRenderer(name), vue()],
     resolve: {

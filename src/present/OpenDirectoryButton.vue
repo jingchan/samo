@@ -10,7 +10,7 @@
 const emit = defineEmits(['directorySelected']);
 
 const selectDir = async () => {
-  const dirFiles = await window.inputApi.chooseDirectory();
+  const dirFiles = await window.api.chooseDirectory();
   emit('directorySelected', dirFiles);
 };
 </script>

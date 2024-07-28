@@ -13,20 +13,18 @@
         </svg>
       </button>
     </div>
-    <OpenDirectoryButton @directory-selected="openDirectory" />
-    <ul class="flex flex-col p-4 overflow-y-auto">
-      <!-- //   <li v-for="(file, index) in files" @click="showImage(file)">
-//     {{ index }}. {{ file.path }} {{ file.name }}
-//   </li> -->
+    <OpenDirectoryButton @directory-selected="console.log" />
+    <div class="p-2">{{ props.rootDir }}</div>
+    <ul class="flex flex-col p-2 overflow-y-auto">
       <li
-        v-for="folder in props.folders"
-        :key="folder.name"
+        v-for="folder in folders"
+        :key="folder.path"
         class="mb-2"
-        @click="$emit('imageSelected', folder.name)"
+        @click="$emit('imageSelected', folder)"
       >
         <a
           href="#"
-          class="text-sm flex items-center text-gray-500 hover:text-white hover:bg-gray-600"
+          class="text-sm flex items-center hover:text-white hover:bg-gray-600"
         >
           <svg
             v-if="folder.type === 'folder'"
@@ -46,7 +44,7 @@
             viewBox="0 0 20 20"
             fill="currentColor"
           ></svg>
-          <span>{{ folder.name }}</span>
+          <span>{{ folder.path }}/{{ folder.name }}</span>
         </a>
       </li>
     </ul>
@@ -55,16 +53,31 @@
 
 <script setup lang="ts">
 import OpenDirectoryButton from './OpenDirectoryButton.vue';
-import { File } from '../load/filesystem';
+import { FileSystemFile } from '../load/filesystem';
+import { ref, watchEffect } from 'vue';
 
-const emit = defineEmits(['imageSelected']);
-
+defineEmits(['imageSelected']);
 const props = defineProps<{
-  files: [File];
-  folders: [{ name: string; type: string }];
+  rootDir?: string;
 }>();
 
-const openDirectory = (selectedDir) => {
-  console.load(selectedDir);
-};
+const folders = ref<FileSystemFile[]>();
+watchEffect(async () => {
+  const res = await window.api.listDirectory(props.rootDir);
+  res.sort((a, b) => {
+    if (a.path == b.path) {
+      return a.name < b.name ? -1 : 1;
+    }
+    return a.path < b.path ? -1 : 1;
+  });
+  folders.value = res;
+});
+
+// window.api.onLocationUpdate((path: string, images: FileSystemFile[]) => {
+//   console.log('onLocationUpdate called', path, images);
+//   folders.value = images.map((image) => {
+//     console.log(image, image.path);
+//     return image;
+//   });
+// });
 </script>

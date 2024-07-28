@@ -1,6 +1,6 @@
 // import {PathLike} from 'node:fs';
 import fs, { PathLike, Dirent } from 'node:fs';
-import { extname } from 'node:path';
+import path from 'node:path';
 import { opendir } from 'node:fs/promises';
 import mime from 'mime-types';
 const imageExtensions = [
@@ -45,6 +45,14 @@ export class FileSystemFile implements File {
     return undefined;
   }
 
+  get fullPath(): string {
+    return path.join(this.path, this.name);
+  }
+
+  get type(): string {
+    return this.isDirectory ? 'folder' : 'file';
+  }
+
   // Returns `true` if the file is an image.
   isImage(): boolean {
     return imageExtensions.includes(this.extension?.toLowerCase());
@@ -77,12 +85,16 @@ export async function filesInDirectory(path: PathLike) {
 export async function imagesInDirectory(path: PathLike) {
   const files = [];
   for await (const file of filesInDirectoryIter(path)) {
-    if (file.isImage()) files.push(file);
+    if (file.isImage()) {
+      files.push(file);
+    }
   }
   return files;
 }
 
-export async function getImageUrl(path: string): Promise<string | null> {
+export async function getImageUrl(
+  file: FileSystemFile,
+): Promise<string | null> {
   // try {
   //   const buffer = fs.readFileSync(path);
   //   const mimeType = getMimeType(buffer); // Function to determine mime type (explained later)
@@ -93,8 +105,9 @@ export async function getImageUrl(path: string): Promise<string | null> {
   //   return null; // Or return a default data URL for error handling
   // }
   try {
-    const buffer = await fs.promises.readFile(path);
-    const mimeType = await getMimeType(path);
+    const imagePath = path.join(file.path, file.name);
+    const buffer = await fs.promises.readFile(imagePath);
+    const mimeType = await getMimeType(file);
     const base64Data = Buffer.from(buffer).toString('base64');
     return `data:${mimeType};base64,${base64Data}`;
   } catch (error) {
@@ -103,8 +116,8 @@ export async function getImageUrl(path: string): Promise<string | null> {
   }
 }
 
-export async function getMimeType(path: string): Promise<string> {
-  switch (extname(path)) {
+export async function getMimeType(file: FileSystemFile): Promise<string> {
+  switch (path.extname(file.name)) {
     case '.jpg':
       return 'image/jpeg';
     case '.png':
@@ -123,6 +136,6 @@ export async function getMimeType(path: string): Promise<string> {
       return 'image/x-sony-arw';
 
     default:
-      return mime.lookup(path) || 'application/octet-stream';
+      return mime.lookup(file.fullPath) || 'application/octet-stream';
   }
 }

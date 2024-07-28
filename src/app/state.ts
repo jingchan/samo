@@ -6,7 +6,8 @@ const SamoStateFilePath = path.join(__dirname, 'samo.json');
 type DirectoryPath = string;
 
 export interface SamoState {
-  lastOpenedDirectory?: DirectoryPath;
+  currentDirectory?: DirectoryPath;
+  currentFile?: DirectoryPath;
   explorerOpen?: boolean;
 }
 
@@ -15,7 +16,8 @@ const DefaultSamoState: SamoState = {
 };
 
 export async function saveState(state: SamoState) {
-  return writeFile(SamoStateFilePath, JSON.stringify(state, null));
+  await writeFile(SamoStateFilePath, JSON.stringify(state, null));
+  console.log('State saved:', state);
 }
 
 export async function getInitialState(): Promise<SamoState> {
